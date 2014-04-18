@@ -1,13 +1,14 @@
 #ifndef PATHFINDER_H
 #define PATHFINDER_H
 
+#include <QObject>
 #include <QVector>
 #include <QPoint>
 #include <QRectF>
 
 /*This class exists purely as an interface, everything is done inside of its one public function.*/
 
-class PathFinder
+class PathFinder : public QObject
 {
     Q_OBJECT
 
