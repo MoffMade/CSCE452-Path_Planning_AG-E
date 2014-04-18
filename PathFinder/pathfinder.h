@@ -5,6 +5,8 @@
 #include <QVector>
 #include <QPoint>
 #include <QRectF>
+#include <QLine>
+
 
 struct PointsNode
 {
@@ -24,6 +26,8 @@ class PathFinder : public QObject
     Q_OBJECT
 
 public:
+    static enum LineStart_t{TOPLEFT, TOPRIGHT, BOTTOMLEFT, BOTTOMRIGHT} LineStart;
+
     /************************************************************************************************************
      * finds the path through the obstacle field
      *
@@ -41,6 +45,8 @@ public:
 
     static QVector<QPoint> pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPoint start, QPoint goal);
 
+private:
+    static double findEnd(QVector<QRectF*> rects, int index, LineStart_t startPoint);
 };
 
 #endif // PATHFINDER_H

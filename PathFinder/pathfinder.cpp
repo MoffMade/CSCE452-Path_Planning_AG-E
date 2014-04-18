@@ -48,12 +48,13 @@ QVector<QPoint> PathFinder::pathFinder(QRectF window,QRectF r1, QRectF r2, QRect
      * 6. DONE :)*/
 
     QVector<PointsNode> points;
+    QVector<QLineF> lines;
     QVector<QRectF*> rects;
     rects.push_back(&r1);
     rects.push_back(&r2);
     rects.push_back(&r3);
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < rects.size(); i++)
     {
         PointsNode node1;
         node1.point = rects[i]->topLeft();
@@ -65,4 +66,93 @@ QVector<QPoint> PathFinder::pathFinder(QRectF window,QRectF r1, QRectF r2, QRect
         points.push_back(node2);
     }
     qSort(points.begin(),points.end());
+
+    for (int i = 0; i < rects.size(); i++)
+    {
+        lines.push_back(QLineF(rects[i]->topLeft(), QPointF(rects[i]->topLeft().x(), findEnd(rects, i, TOPLEFT))));
+        lines.push_back(QLineF(rects[i]->topLeft(), QPointF(rects[i]->bottomLeft().x(), findEnd(rects, i,BOTTOMLEFT))));
+        lines.push_back(QLineF(rects[i]->topLeft(), QPointF(rects[i]->topRight().x(), findEnd(rects, i, TOPRIGHT))));
+        lines.push_back(QLineF(rects[i]->topLeft(), QPointF(rects[i]->bottomRight().x(), findEnd(rects, i, BOTTOMRIGHT))));
+    }
+}
+
+
+double PathFinder::findEnd(QVector<QRectF*> rects, int index, LineStart_t startPoint)
+{
+    QRectF* closestRect = NULL;
+    switch(startPoint)
+    {
+
+    case TOPLEFT:
+        for(int i = 0; i < rects.size(); i ++)
+        {
+            if(i != index)      //dont check the current rectangle
+            {
+                if(rects[i]->bottom() > rects[index]->top())        //is it above the current rectangle?
+                {
+                    if(rects[i]->left() < rects[index]->left() && rects[i]->right() > rects[index]->left())     //is it in the way?
+                    {
+                        if(closestRect == NULL) closestRect = rects[i];
+                        else if(rects[i]->bottom() < closestRect->bottom()) closestRect = rects[i];     //is it the closest?
+                    }
+                }
+            }
+        }
+        if (closestRect = NULL) return -1;
+        else return closestRect->bottom();
+
+    case TOPRIGHT:
+        for(int i = 0; i < rects.size(); i ++)
+        {
+            if(i != index)      //dont check the current rectangle
+            {
+                if(rects[i]->bottom() > rects[index]->top())        //is it above the current rectangle?
+                {
+                    if(rects[i]->left() < rects[index]->right() && rects[i]->right() > rects[index]->right())     //is it in the way?
+                    {
+                        if(closestRect == NULL) closestRect = rects[i];
+                        else if(rects[i]->bottom() < closestRect->bottom()) closestRect = rects[i];     //is it the closest?
+                    }
+                }
+            }
+        }
+        if (closestRect = NULL) return -1;
+        else return closestRect->bottom();
+
+    case BOTTOMLEFT:
+        for(int i = 0; i < rects.size(); i ++)
+        {
+            if(i != index)      //dont check the current rectangle
+            {
+                if(rects[i]->top() < rects[index]->bottom())        //is it below the current rectangle?
+                {
+                    if(rects[i]->left() < rects[index]->left() && rects[i]->right() > rects[index]->left())     //is it in the way?
+                    {
+                        if(closestRect == NULL) closestRect = rects[i];
+                        else if(rects[i]->top() > closestRect->top()) closestRect = rects[i];     //is it the closest?
+                    }
+                }
+            }
+        }
+        if (closestRect = NULL) return -1;
+        else return closestRect->top();
+
+    case BOTTOMRIGHT:
+        for(int i = 0; i < rects.size(); i ++)
+        {
+            if(i != index)      //dont check the current rectangle
+            {
+                if(rects[i]->top() < rects[index]->bottom())        //is it below the current rectangle?
+                {
+                    if(rects[i]->left() < rects[index]->right() && rects[i]->right() > rects[index]->right())     //is it in the way?
+                    {
+                        if(closestRect == NULL) closestRect = rects[i];
+                        else if(rects[i]->top() > closestRect->top()) closestRect = rects[i];     //is it the closest?
+                    }
+                }
+            }
+        }
+        if (closestRect = NULL) return -1;
+        else return closestRect->top();
+    }
 }
