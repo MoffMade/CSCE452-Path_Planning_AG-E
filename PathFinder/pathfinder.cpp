@@ -1,6 +1,8 @@
+#include <QtAlgorithms>
 #include "pathfinder.h"
 
-static QVector<QPoint> pathFinder(QRectF window,QRectF r1, QRectF r2, QRectF r3, QPoint start, QPoint goal)
+
+QVector<QPoint> PathFinder::pathFinder(QRectF window,QRectF r1, QRectF r2, QRectF r3, QPoint start, QPoint goal)
 {
     /*1. do a vertical cell decomposition
      *2. construct a graph of all the cells and their interconnections
@@ -43,6 +45,24 @@ static QVector<QPoint> pathFinder(QRectF window,QRectF r1, QRectF r2, QRectF r3,
      *           2. draw line from top of field or other QRectF to bottom of field or other QRectF with same x
      *          coord as this QRectF along the right side
      * 5. repeat 3
-     * 6. DONE :)
-     * /
+     * 6. DONE :)*/
+
+    QVector<PointsNode> points;
+    QVector<QRectF*> rects;
+    rects.push_back(&r1);
+    rects.push_back(&r2);
+    rects.push_back(&r3);
+
+    for(int i = 0; i < 3; i++)
+    {
+        PointsNode node1;
+        node1.point = rects[i]->topLeft();
+        node1.rect = rects[i];
+        points.push_back(node1);
+        PointsNode node2;
+        node2.point = rects[i]->bottomRight();
+        node2.rect = rects[i];
+        points.push_back(node2);
+    }
+    qSort(points.begin(),points.end());
 }

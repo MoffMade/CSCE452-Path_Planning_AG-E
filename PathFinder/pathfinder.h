@@ -6,6 +6,17 @@
 #include <QPoint>
 #include <QRectF>
 
+struct PointsNode
+{
+    QPointF point;
+    QRectF * rect;
+
+    bool operator<(PointsNode other) const
+    {
+        return point.x() < other.point.x();
+    }
+};
+
 /*This class exists purely as an interface, everything is done inside of its one public function.*/
 
 class PathFinder : public QObject
