@@ -43,7 +43,7 @@ public:
      *  lines, one from point1 to point 2, and another from point 2 to point 3.
      ***********************************************************************************************************/
 
-    static QVector<QRectF> pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal);
+    static QVector<QLineF> pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal);
 
 private:
     static double findEnd(QVector<QRectF*> rects, QRectF *window, int index, LineStart_t startPoint);

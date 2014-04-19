@@ -2,7 +2,7 @@
 #include "pathfinder.h"
 
 
-QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
+QVector<QLineF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
 {
     /*1. do a vertical cell decomposition
      *2. construct a graph of all the cells and their interconnections
@@ -97,7 +97,17 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
             }
         }
     }
-    return cells;
+
+    QVector<QLineF> lines2;
+    for (int i = 0; i < rects.size(); i++)
+    {
+        lines2.push_back(QLineF(QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, TOPLEFT)), QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, BOTTOMLEFT))));
+        lines2.push_back(QLineF(QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, TOPRIGHT)), QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
+        lines2.push_back(QLineF(window.topLeft(),window.bottomLeft()));
+        lines2.push_back(QLineF(window.topRight(), window.bottomRight()));
+    }
+    return lines2;
+
 }
 
 
