@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    mouselisteningscene.cpp
+    mouselisteningscene.cpp \
+    pathfinder.cpp
 
 HEADERS  += mainwindow.h \
-    mouselisteningscene.h
+    mouselisteningscene.h \
+    pathfinder.h
 
 FORMS    += mainwindow.ui

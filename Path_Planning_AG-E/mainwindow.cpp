@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "pathfinder.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,6 +39,12 @@ void MainWindow::paintPath(QVector<QPointF> vertices){
 
 void MainWindow::on_paintButton_clicked()
 {
+    QVector<QLineF> lines = PathFinder::pathFinder(simScene->sceneRect(), block1->boundingRect(), block2->boundingRect(), block3->boundingRect(), startMarker->rect().center(), goalMarker->rect().center());
+    for (int i = 0; i < lines.size(); i++)
+    {
+        simScene->addLine(lines[i]);
+    }
+
     //Remove any previous path if present
     if(pathLines.size()!=0){
         for(int i=0; i<pathLines.size(); i++){
