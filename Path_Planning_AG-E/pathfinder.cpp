@@ -2,7 +2,7 @@
 #include "pathfinder.h"
 
 
-QVector<QLineF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
+QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
 {
     /*1. do a vertical cell decomposition
      *2. construct a graph of all the cells and their interconnections
@@ -75,38 +75,18 @@ QVector<QLineF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
         lines.push_back(QLineF(rects[i]->bottomRight(), QPointF(rects[i]->bottomRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
     }
 
-    QVector<QRectF> cells;
-    for (int i = 0; i < lines.size(); i++)
-    {
-        for (int j = 0; j < lines.size(); j++)
-        {
-            if (i != j)
-            {
-                if((lines[i].y1() == lines[j].y1() && lines[i].y2() == lines[j].y2()) ||            //if y coords are the same
-                        (lines[i].y1() == lines[j].y2() && lines[i].y2() == lines[j].y1()))
-                {
-                    QRectF cell;
-                    if(lines[i].p1().y() == lines[j].p1().y())
-                    {
-                        cell = QRectF(lines[i].p1(), lines[j].p2());
-                    } else {
-                        cell = QRectF(lines[i].p1(),lines[j].p1());
-                    }
-                    if(noCollide(rects, cells, cell)) cells.push_back(cell);
-                }
-            }
-        }
-    }
+    return findCells(lines, rects);
 
-    QVector<QLineF> lines2;
-    for (int i = 0; i < rects.size(); i++)
-    {
-        lines2.push_back(QLineF(QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, TOPLEFT)), QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, BOTTOMLEFT))));
-        lines2.push_back(QLineF(QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, TOPRIGHT)), QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
-        lines2.push_back(QLineF(window.topLeft(),window.bottomLeft()));
-        lines2.push_back(QLineF(window.topRight(), window.bottomRight()));
-    }
-    return lines2;
+
+//    QVector<QLineF> lines2;
+//    for (int i = 0; i < rects.size(); i++)
+//    {
+//        lines2.push_back(QLineF(QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, TOPLEFT)), QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, BOTTOMLEFT))));
+//        lines2.push_back(QLineF(QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, TOPRIGHT)), QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
+//        lines2.push_back(QLineF(window.topLeft(),window.bottomLeft()));
+//        lines2.push_back(QLineF(window.topRight(), window.bottomRight()));
+//    }
+//    return lines2;
 
 }
 
@@ -189,6 +169,33 @@ double PathFinder::findEnd(QVector<QRectF*> rects, QRectF* window, int index, Li
         if (closestRect == NULL) return window->bottom();
         else return closestRect->top();
     }
+}
+
+QVector <QRectF> PathFinder::findCells(QVector<QLineF> lines, QVector<QRectF*> rects)
+{
+    QVector<QRectF> cells;
+    for (int i = 0; i < lines.size(); i++)
+    {
+        for (int j = 0; j < lines.size(); j++)
+        {
+            if (i != j)
+            {
+                if((lines[i].y1() == lines[j].y1() && lines[i].y2() == lines[j].y2()) ||            //if y coords are the same
+                        (lines[i].y1() == lines[j].y2() && lines[i].y2() == lines[j].y1()))
+                {
+                    QRectF cell;
+                    if(lines[i].p1().y() == lines[j].p1().y())
+                    {
+                        cell = QRectF(lines[i].p1(), lines[j].p2());
+                    } else {
+                        cell = QRectF(lines[i].p1(),lines[j].p1());
+                    }
+                    if(noCollide(rects, cells, cell)) cells.push_back(cell);
+                }
+            }
+        }
+    }
+    return cells;
 }
 
 bool PathFinder::noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF cell)
