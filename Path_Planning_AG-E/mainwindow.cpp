@@ -39,7 +39,11 @@ void MainWindow::paintPath(QVector<QPointF> vertices){
 
 void MainWindow::on_paintButton_clicked()
 {
-    QVector<QLineF> lines = PathFinder::pathFinder(simScene->sceneRect(), block1->boundingRect(), block2->boundingRect(), block3->boundingRect(), startMarker->rect().center(), goalMarker->rect().center());
+    QRectF r1, r2, r3;
+    r1 = block1->mapRectToScene(block1->boundingRect());
+    r2 = block2->mapRectToScene(block2->boundingRect());
+    r3 = block3->mapRectToScene(block3->boundingRect());
+    QVector<QLineF> lines = PathFinder::pathFinder(simScene->sceneRect(), r1, r2, r3, startMarker->boundingRect().center(), goalMarker->boundingRect().center());
     for (int i = 0; i < lines.size(); i++)
     {
         simScene->addLine(lines[i]);
