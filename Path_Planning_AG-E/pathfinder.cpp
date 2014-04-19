@@ -75,8 +75,9 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
         lines.push_back(QLineF(rects[i]->bottomRight(), QPointF(rects[i]->bottomRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
     }
 
-    return findCells(lines, rects);
-
+    QVector<QRectF> cells;
+    findCells(&cells, lines, rects);
+    return cells;
 
 //    QVector<QLineF> lines2;
 //    for (int i = 0; i < rects.size(); i++)
@@ -171,9 +172,8 @@ double PathFinder::findEnd(QVector<QRectF*> rects, QRectF* window, int index, Li
     }
 }
 
-QVector <QRectF> PathFinder::findCells(QVector<QLineF> lines, QVector<QRectF*> rects)
+void PathFinder::findCells(QVector<QRectF>* cells, QVector<QLineF> lines, QVector<QRectF*> rects)
 {
-    QVector<QRectF> cells;
     for (int i = 0; i < lines.size(); i++)
     {
         for (int j = 0; j < lines.size(); j++)
@@ -190,12 +190,11 @@ QVector <QRectF> PathFinder::findCells(QVector<QLineF> lines, QVector<QRectF*> r
                     } else {
                         cell = QRectF(lines[i].p1(),lines[j].p1());
                     }
-                    if(noCollide(rects, cells, cell)) cells.push_back(cell);
+                    if(noCollide(rects, *cells, cell)) cells->push_back(cell);
                 }
             }
         }
     }
-    return cells;
 }
 
 bool PathFinder::noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF cell)
