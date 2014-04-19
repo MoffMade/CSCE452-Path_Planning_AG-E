@@ -47,6 +47,7 @@ public:
 
 private:
     static double findEnd(QVector<QRectF*> rects, QRectF *window, int index, LineStart_t startPoint);
+    static bool noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF cell);
 };
 
 #endif // PATHFINDER_H

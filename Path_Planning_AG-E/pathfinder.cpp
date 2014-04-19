@@ -92,20 +92,7 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
                     } else {
                         cell = QRectF(lines[i].p1(),lines[j].p1());
                     }
-                    if(cells.size() == 0) cells.push_back(cell);
-                    else
-                    {
-                        bool no_collide = true;
-                        for (int k = 0; k < cells.size(); k++)
-                        {
-                            if (cell.contains(cells[k]) || cells[k].contains(cell)) no_collide = false;
-                        }
-                        for(int k = 0; k < rects.size(); k++)
-                        {
-                            if(cell.contains(*rects[k]) || rects[k]->contains(cell)) no_collide = false;
-                        }
-                        if(no_collide) cells.push_back(cell);
-                    }
+                    if(noCollide(rects, cells, cell)) cells.push_back(cell);
                 }
             }
         }
@@ -192,4 +179,22 @@ double PathFinder::findEnd(QVector<QRectF*> rects, QRectF* window, int index, Li
         if (closestRect == NULL) return window->bottom();
         else return closestRect->top();
     }
+}
+
+bool PathFinder::noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF cell)
+{
+    bool no_collide = true;
+    if (cells.size() == 0) return true;
+    else
+    {
+        for (int i = 0; i < cells.size(); i++)
+        {
+            if (cell.contains(cells[i]) || cells[i].contains(cell)) no_collide = false;
+        }
+        for(int i = 0; i < rects.size(); i++)
+        {
+            if(cell.contains(*rects[i]) || rects[i]->contains(cell)) no_collide = false;
+        }
+    }
+    return no_collide;
 }
