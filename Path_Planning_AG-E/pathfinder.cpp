@@ -1,5 +1,6 @@
 #include <QtAlgorithms>
 #include "pathfinder.h"
+#include <QDebug>
 
 
 QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
@@ -10,10 +11,6 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
      *4. generate and return QLines for each node, representing the path*/
 
     /*Step 1
-     *
-     * 1. sort points by x coordinates
-     *      1. create list of pointers to point and parent QRectF
-     *      2. sort by points x coordinates
      * 2. draw Qlines from each vertical face of each QRectF.
      *      1. for each QRectF:
      *          1. draw line from topleft to top of field or other QRectF
@@ -47,25 +44,11 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
      * 5. repeat 3
      * 6. DONE :)*/
 
-    QVector<PointsNode> points;
     QVector<QLineF> lines;
     QVector<QRectF*> rects;
     rects.push_back(&r1);
     rects.push_back(&r2);
     rects.push_back(&r3);
-
-//    for(int i = 0; i < rects.size(); i++)
-//    {
-//        PointsNode node1;
-//        node1.point = rects[i]->topLeft();
-//        node1.rect = rects[i];
-//        points.push_back(node1);
-//        PointsNode node2;
-//        node2.point = rects[i]->bottomRight();
-//        node2.rect = rects[i];
-//        points.push_back(node2);
-//    }
-//    qSort(points.begin(),points.end());
 
     for (int i = 0; i < rects.size(); i++)
     {
@@ -77,17 +60,23 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
 
     QVector<QRectF> cells;
     findCells(&cells, lines, rects);
-    return cells;
 
-//    QVector<QLineF> lines2;
-//    for (int i = 0; i < rects.size(); i++)
-//    {
-//        lines2.push_back(QLineF(QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, TOPLEFT)), QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, BOTTOMLEFT))));
-//        lines2.push_back(QLineF(QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, TOPRIGHT)), QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
-//        lines2.push_back(QLineF(window.topLeft(),window.bottomLeft()));
-//        lines2.push_back(QLineF(window.topRight(), window.bottomRight()));
-//    }
-//    return lines2;
+    for (int i = 0; i < rects.size(); i++)
+    {
+        lines.push_back(QLineF(QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, TOPLEFT)), QPointF(rects[i]->topLeft().x(), findEnd(rects, &window, i, BOTTOMLEFT))));
+        lines.push_back(QLineF(QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, TOPRIGHT)), QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
+        lines.push_back(QLineF(window.topLeft(),window.bottomLeft()));
+        lines.push_back(QLineF(window.topRight(), window.bottomRight()));
+    }
+
+    findCells(&cells, lines, rects);
+
+    qDebug() << "Cells before: "<< cells.size();
+
+    removeExtraneous(&cells);
+
+    qDebug() << "cells: " << cells.size();
+    return cells;
 
 }
 
@@ -190,6 +179,7 @@ void PathFinder::findCells(QVector<QRectF>* cells, QVector<QLineF> lines, QVecto
                     } else {
                         cell = QRectF(lines[i].p1(),lines[j].p1());
                     }
+                    cell = cell.normalized();
                     if(noCollide(rects, *cells, cell)) cells->push_back(cell);
                 }
             }
@@ -205,12 +195,36 @@ bool PathFinder::noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF
     {
         for (int i = 0; i < cells.size(); i++)
         {
-            if (cell.contains(cells[i]) || cells[i].contains(cell)) no_collide = false;
+            if (cell.contains(cells[i]) || cell.intersects(cells[i])) no_collide = false;
         }
         for(int i = 0; i < rects.size(); i++)
         {
-            if(cell.contains(*rects[i]) || rects[i]->contains(cell)) no_collide = false;
+            if(cell.contains(*rects[i]) || cell.intersects(*rects[i])) no_collide = false;
         }
     }
     return no_collide;
+}
+
+void PathFinder::removeExtraneous(QVector<QRectF> *cells)
+{
+    for(int i = 0; i < cells->size(); i++)
+    {
+        if (cells->at(i).isEmpty())
+        {
+            cells->remove(i);
+            i--;
+        }
+        else
+        {
+            for(int j = i+1; j < cells->size(); j++)
+            {
+                if (cells->at(i).topLeft() ==  cells->at(j).topLeft() &&            //are they the same rectangle?
+                        cells->at(i).bottomRight() == cells->at(j).bottomRight())
+                {
+                    cells->remove(j);
+                    i--;
+                }
+            }
+        }
+    }
 }

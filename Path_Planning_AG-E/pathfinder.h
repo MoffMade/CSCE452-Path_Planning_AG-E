@@ -7,18 +7,6 @@
 #include <QRectF>
 #include <QLine>
 
-
-struct PointsNode
-{
-    QPointF point;
-    QRectF * rect;
-
-    bool operator<(PointsNode other) const
-    {
-        return point.x() < other.point.x();
-    }
-};
-
 /*This class exists purely as an interface, everything is done inside of its one public function.*/
 
 class PathFinder : public QObject
@@ -49,6 +37,7 @@ private:
     static double findEnd(QVector<QRectF*> rects, QRectF *window, int index, LineStart_t startPoint);
     static bool noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF cell);
     static void findCells(QVector<QRectF> *cells, QVector<QLineF> lines, QVector<QRectF*> rects);
+    static void removeExtraneous(QVector<QRectF> *cells);
 };
 
 #endif // PATHFINDER_H
