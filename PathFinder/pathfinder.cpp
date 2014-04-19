@@ -98,7 +98,7 @@ double PathFinder::findEnd(QVector<QRectF*> rects, int index, LineStart_t startP
                 }
             }
         }
-        if (closestRect = NULL) return -1;
+        if (closestRect == NULL) return -1;
         else return closestRect->bottom();
 
     case TOPRIGHT:
@@ -116,7 +116,7 @@ double PathFinder::findEnd(QVector<QRectF*> rects, int index, LineStart_t startP
                 }
             }
         }
-        if (closestRect = NULL) return -1;
+        if (closestRect == NULL) return -1;
         else return closestRect->bottom();
 
     case BOTTOMLEFT:
@@ -134,7 +134,7 @@ double PathFinder::findEnd(QVector<QRectF*> rects, int index, LineStart_t startP
                 }
             }
         }
-        if (closestRect = NULL) return -1;
+        if (closestRect == NULL) return -1;
         else return closestRect->top();
 
     case BOTTOMRIGHT:
@@ -152,7 +152,8 @@ double PathFinder::findEnd(QVector<QRectF*> rects, int index, LineStart_t startP
                 }
             }
         }
-        if (closestRect = NULL) return -1;
+        if (closestRect == NULL) return -1;
         else return closestRect->top();
     }
+    return -1;
 }

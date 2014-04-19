@@ -18,3 +18,5 @@ SOURCES += \
 
 HEADERS += \
     pathfinder.h
+
+FORMS +=
