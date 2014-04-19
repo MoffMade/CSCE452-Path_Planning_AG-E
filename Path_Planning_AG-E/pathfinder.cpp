@@ -2,7 +2,7 @@
 #include "pathfinder.h"
 
 
-QVector<QLineF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
+QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
 {
     /*1. do a vertical cell decomposition
      *2. construct a graph of all the cells and their interconnections
@@ -74,7 +74,43 @@ QVector<QLineF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
         lines.push_back(QLineF(rects[i]->topRight(), QPointF(rects[i]->topRight().x(), findEnd(rects, &window, i,  TOPRIGHT))));
         lines.push_back(QLineF(rects[i]->bottomRight(), QPointF(rects[i]->bottomRight().x(), findEnd(rects, &window, i, BOTTOMRIGHT))));
     }
-    return lines;
+
+    QVector<QRectF> cells;
+    for (int i = 0; i < lines.size(); i++)
+    {
+        for (int j = 0; j < lines.size(); j++)
+        {
+            if (i != j)
+            {
+                if((lines[i].y1() == lines[j].y1() && lines[i].y2() == lines[j].y2()) ||            //if y coords are the same
+                        (lines[i].y1() == lines[j].y2() && lines[i].y2() == lines[j].y1()))
+                {
+                    QRectF cell;
+                    if(lines[i].p1().y() == lines[j].p1().y())
+                    {
+                        cell = QRectF(lines[i].p1(), lines[j].p2());
+                    } else {
+                        cell = QRectF(lines[i].p1(),lines[j].p1());
+                    }
+                    if(cells.size() == 0) cells.push_back(cell);
+                    else
+                    {
+                        bool no_collide = true;
+                        for (int k = 0; k < cells.size(); k++)
+                        {
+                            if (cell.contains(cells[k]) || cells[k].contains(cell)) no_collide = false;
+                        }
+                        for(int k = 0; k < rects.size(); k++)
+                        {
+                            if(cell.contains(*rects[k]) || rects[k]->contains(cell)) no_collide = false;
+                        }
+                        if(no_collide) cells.push_back(cell);
+                    }
+                }
+            }
+        }
+    }
+    return cells;
 }
 
 
