@@ -9,6 +9,13 @@
 
 /*This class exists purely as an interface, everything is done inside of its one public function.*/
 
+struct Node
+{
+public:
+    QRectF* cell;
+    QVector<Node*> connections;
+};
+
 class PathFinder : public QObject
 {
     Q_OBJECT
@@ -34,6 +41,9 @@ public:
     static QVector<QRectF> pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal);
 
 private:
+    static QVector<QRectF> cellDecomposition(QRectF window, QRectF r1, QRectF r2, QRectF r3);
+    static Node* generateGraph(QVector<QRectF> cells);
+    static QVector<QPoint> findPath(Node*);
     static double findEnd(QVector<QRectF*> rects, QRectF *window, int index, LineStart_t startPoint);
     static bool noCollide(QVector<QRectF*> rects, QVector<QRectF> cells, QRectF cell);
     static void findCells(QVector<QRectF> *cells, QVector<QLineF> lines, QVector<QRectF*> rects);

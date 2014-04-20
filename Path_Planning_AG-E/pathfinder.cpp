@@ -43,7 +43,23 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
      *          coord as this QRectF along the right side
      * 5. repeat 3
      * 6. DONE :)*/
+    return cellDecomposition(window, r1, r2, r3);
 
+
+}
+
+QVector<QPoint> PathFinder::findPath(Node*)
+{
+
+}
+
+Node* PathFinder::generateGraph(QVector<QRectF> cells)
+{
+
+}
+
+QVector<QRectF> PathFinder::cellDecomposition(QRectF window, QRectF r1, QRectF r2, QRectF r3)
+{
     QVector<QLineF> lines;
     QVector<QRectF*> rects;
     rects.push_back(&r1);
@@ -71,15 +87,10 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
 
     findCells(&cells, lines, rects);
 
-    qDebug() << "Cells before: "<< cells.size();
-
     removeExtraneous(&cells);
 
-    qDebug() << "cells: " << cells.size();
     return cells;
-
 }
-
 
 double PathFinder::findEnd(QVector<QRectF*> rects, QRectF* window, int index, LineStart_t startPoint)
 {
