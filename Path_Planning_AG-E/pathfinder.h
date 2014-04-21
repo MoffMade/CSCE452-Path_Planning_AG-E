@@ -14,6 +14,7 @@ struct Node
 public:
     QRectF* cell;
     QVector<Node*> connections;
+    void* number;       //only for debugging
 };
 
 class PathFinder : public QObject

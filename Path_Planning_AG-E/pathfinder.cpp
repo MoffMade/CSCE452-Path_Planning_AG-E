@@ -43,8 +43,12 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
      *          coord as this QRectF along the right side
      * 5. repeat 3
      * 6. DONE :)*/
-    return cellDecomposition(window, r1, r2, r3);
 
+    QVector<QRectF> cells = cellDecomposition(window, r1, r2, r3);
+    Node* headNode;
+    headNode = generateGraph(cells);
+
+    return cells;
 
 }
 
@@ -55,7 +59,46 @@ QVector<QPoint> PathFinder::findPath(Node*)
 
 Node* PathFinder::generateGraph(QVector<QRectF> cells)
 {
+    /*if two cells share an edge of some kind, they are connected
+     *the y coordinates of the two edges must overlap*/
 
+    //create nodes from cells
+    QVector <Node*> nodes;
+    for(int i = 0; i < cells.size(); i++)
+    {
+        Node* node = new Node();
+        node->cell = &cells[i];
+        node->number = node;
+        nodes.push_back(node);
+    }
+
+    for (int i = 0; i < nodes.size(); i++)
+    {
+        for (int j = 0; j < nodes.size(); j++)
+        {
+            if (j != i){
+                if(nodes[i]->cell->left() == nodes[j]->cell->right())
+                {
+                    if((nodes[i]->cell->top() <= nodes[j]->cell->top() && nodes[i]->cell->bottom() >= nodes[j]->cell->top()) ||
+                            (nodes[i]->cell->bottom() >= nodes[j]->cell->bottom() && nodes[i]->cell->top() <= nodes[j]->cell->bottom()))
+                    {
+                        nodes[i]->connections.push_back(nodes[j]);
+                        nodes[j]->connections.push_back(nodes[i]);
+                    }
+                }
+            }
+        }
+    }
+    qDebug() <<"nodes\n";
+    for(int i = 0; i < nodes.size(); i++)
+    {
+        qDebug() <<"node: " << i <<" "<< nodes[i]->number;
+        for(int j = 0; j < nodes[i]->connections.size(); j++)
+        {
+            qDebug() << nodes[i]->connections[j];
+        }
+    }
+    return nodes[0];
 }
 
 QVector<QRectF> PathFinder::cellDecomposition(QRectF window, QRectF r1, QRectF r2, QRectF r3)
