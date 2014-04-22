@@ -39,6 +39,7 @@ private:
     Ui::MainWindow *ui;
     mouseListeningScene *simScene;
     QVector<QGraphicsLineItem*> pathLines;
+    QVector<QGraphicsRectItem*> cells;
     QGraphicsRectItem *block1, *block2, *block3;
     QGraphicsEllipseItem *startMarker, *goalMarker;
     void paintPath(QVector<QPointF> vertices);

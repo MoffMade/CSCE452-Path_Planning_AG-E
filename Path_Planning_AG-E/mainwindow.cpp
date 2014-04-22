@@ -22,7 +22,7 @@ MainWindow::~MainWindow()
 void MainWindow::paintPath(QVector<QPointF> vertices){
     //Ensure at least two points are in vertices
     if(vertices.size()>=2){
-        QPen linePen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+        QPen linePen(Qt::red, 4, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
         for(int i=1;i<vertices.size();i++){
             //Create a QGraphicsLineItem connecting each sequential vertex of the path
             QGraphicsLineItem* tempLine=new QGraphicsLineItem();
@@ -30,6 +30,7 @@ void MainWindow::paintPath(QVector<QPointF> vertices){
             tempLine->setLine(vertices[i-1].x(),vertices[i-1].y(),vertices[i].x(),vertices[i].y());
             //Add the line item to the global vector
             pathLines.push_back(tempLine);
+            simScene->addItem(tempLine);
         }
     }
     else{
@@ -39,16 +40,6 @@ void MainWindow::paintPath(QVector<QPointF> vertices){
 
 void MainWindow::on_paintButton_clicked()
 {
-    QRectF r1, r2, r3;
-    r1 = block1->mapRectToScene(block1->boundingRect());
-    r2 = block2->mapRectToScene(block2->boundingRect());
-    r3 = block3->mapRectToScene(block3->boundingRect());
-    QVector<QRectF> cells = PathFinder::pathFinder(simScene->sceneRect(), r1, r2, r3, startMarker->boundingRect().center(), goalMarker->boundingRect().center());
-    for (int i = 0; i < cells.size(); i++)
-    {
-        simScene->addRect(cells[i],QPen(Qt::blue));
-    }
-
     //Remove any previous path if present
     if(pathLines.size()!=0){
         for(int i=0; i<pathLines.size(); i++){
@@ -56,23 +47,32 @@ void MainWindow::on_paintButton_clicked()
         }
         pathLines.clear();
     }
-    //Draw New Path
-    QVector<QPointF> verts;
-    QPointF startTest(startMarker->x(),startMarker->y());
-    QPointF goalTest(goalMarker->x(),goalMarker->y());
-    QPointF midTest1(block1->x(),block1->y());
-    QPointF midTest2(block2->x(),block2->y());
-    QPointF midTest3(block3->x(),block3->y());
-    verts.push_back(startTest);
-    verts.push_back(midTest1);
-    verts.push_back(midTest2);
-    verts.push_back(midTest3);
-    verts.push_back(goalTest);
-    paintPath(verts);
-    //Add each line item created by paintPath() to the scene
-    for(int i=0; i<pathLines.size(); i++){
-        simScene->addItem(pathLines[i]);
+    //Remove any previous cells if present
+    if(cells.size()!=0){
+        for(int i=0; i<cells.size(); i++){
+            simScene->removeItem(cells[i]);
+        }
+        cells.clear();
     }
+
+    QRectF r1, r2, r3;
+    r1 = block1->mapRectToScene(block1->boundingRect());
+    r2 = block2->mapRectToScene(block2->boundingRect());
+    r3 = block3->mapRectToScene(block3->boundingRect());
+
+    //Draw Cells.
+    QVector<QRectF> graphCells = PathFinder::pathFinderRect(simScene->sceneRect(), r1, r2, r3, startMarker->pos(), goalMarker->pos());
+    for (int i = 0; i < graphCells.size(); i++)
+    {
+        QGraphicsRectItem *cell=new QGraphicsRectItem(graphCells[i]);
+        cell->setPen(QPen(Qt::blue, 2));
+        simScene->addItem(cell);
+        cells.push_back(cell);
+    }
+
+    //Draw New Path
+    QVector<QPointF> vertices = PathFinder::pathFinder(simScene->sceneRect(), r1, r2, r3, startMarker->pos(), goalMarker->pos());
+    paintPath(vertices);
 }
 
 void MainWindow::on_quitButton_clicked()
@@ -88,6 +88,11 @@ void MainWindow::on_resetButton_clicked()
         simScene->removeItem(pathLines[i]);
     }    
     pathLines.clear();
+    for(int i=0; i<cells.size(); i++){
+        simScene->removeItem(cells[i]);
+    }
+    cells.clear();
+
 }
 
 void MainWindow::setUpItems(){
@@ -108,7 +113,7 @@ void MainWindow::setUpItems(){
 
     //Brushes for painting blocks and start/goal
     QBrush *blockBrush=new QBrush(Qt::darkGray, Qt::SolidPattern);
-    QBrush *startBrush=new QBrush(Qt::blue, Qt::SolidPattern);
+    QBrush *startBrush=new QBrush(Qt::darkRed, Qt::SolidPattern);
     QBrush *goalBrush=new QBrush(Qt::green, Qt::SolidPattern);
     block1->setBrush(*blockBrush);
     block2->setBrush(*blockBrush);

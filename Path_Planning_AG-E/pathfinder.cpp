@@ -3,7 +3,7 @@
 #include <QDebug>
 
 
-QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
+QVector<QPointF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
 {
     /*1. do a vertical cell decomposition
      *2. construct a graph of all the cells and their interconnections
@@ -47,14 +47,151 @@ QVector<QRectF> PathFinder::pathFinder(QRectF window, QRectF r1, QRectF r2, QRec
     QVector<QRectF> cells = cellDecomposition(window, r1, r2, r3);
     Node* headNode;
     headNode = generateGraph(cells);
+    return findPath(headNode, start, goal);
 
+}
+QVector<QRectF> PathFinder::pathFinderRect(QRectF window, QRectF r1, QRectF r2, QRectF r3, QPointF start, QPointF goal)
+{
+    QVector<QRectF> cells = cellDecomposition(window, r1, r2, r3);
+    Node* headNode;
+    headNode = generateGraph(cells);
     return cells;
 
 }
-
-QVector<QPoint> PathFinder::findPath(Node*)
+QVector<QPointF> PathFinder::findPath(Node* head, QPointF startPoint, QPointF goalPoint)
 {
+    //findPointInCell - Find which cell start and goal are in
+    //cellPath - Find a list of connected cells from startCell to goalCell
+    qDebug()<<"Starting Path Finding...";
+    Node *startCell, *goalCell;
+    QVector<Node*> *cells=new QVector<Node*>;
+    QVector<Node*> *visitedStart=new QVector<Node*>;
+    QVector<Node*> *visitedGoal=new QVector<Node*>;
+    QVector<QPointF> pathPoints;
+    startCell=findPointInCell(head,startPoint,visitedStart);
+    goalCell=findPointInCell(head,goalPoint,visitedGoal);
+    qDebug()<<"Found cell containing start and goal points.";
+    Node *path=cellPath(startCell,goalCell,cells);
+    if(path!=NULL){
+        qDebug()<<"Found path between points. Cell path is:";
+        for(int i=0; i<cells->size();i++)
+            qDebug()<<cells->at(i)->number;
+        qDebug()<<"Building line paths...";
+        //Build QPoint Path
+        //First Point (Start)
+        pathPoints.push_back(startPoint);
+        //Build based on cells vector
+        //  -Adds points on edge midpoints for intermediate cells
+        //   (up until reaching the final cell)
+        for(int i=1;i<cells->size();i++){
+            //Find closet neighboring edge of next cell.
+            qDebug()<<"Building path line"<<i;
+            QPointF nextPoint;
+            QRectF currentCell=*(cells->at(i-1)->cell);
+            QRectF nextCell=*(cells->at(i)->cell);
+            if( currentCell.x() < nextCell.x() ){
+                //Path moving RIGHT
+                if( currentCell.height() < nextCell.height() ){
+                    //current cell has smaller edge
+                    nextPoint.setX( currentCell.topRight().x() );
+                    nextPoint.setY( currentCell.topRight().y() + (currentCell.height()/2) );
+                    pathPoints.push_back(nextPoint);
+                }
+                else if( currentCell.height() > nextCell.height() ){
+                    //next cell has smaller edge
+                    nextPoint.setX( nextCell.topLeft().x() );
+                    nextPoint.setY( nextCell.topLeft().y() + (nextCell.height()/2) );
+                    pathPoints.push_back(nextPoint);
+                }
+            }
+            else if( currentCell.x() > nextCell.x() ){
+                //Path moving LEFT
+                if( currentCell.height() < nextCell.height() ){
+                    //current cell has smaller edge
+                    nextPoint.setX( currentCell.topLeft().x() );
+                    nextPoint.setY( currentCell.topLeft().y() + (currentCell.height()/2) );
+                    pathPoints.push_back(nextPoint);
+                }
+                else if( currentCell.height() > nextCell.height() ){
+                    //next cell has smaller edge
+                    nextPoint.setX( nextCell.topRight().x() );
+                    nextPoint.setY( nextCell.topRight().y() + (nextCell.height()/2) );
+                    pathPoints.push_back(nextPoint);
+                }
+            }
+        }
+        //All intermediate points added, add goal point to finish.
+        qDebug()<<"Building final path line";
+        pathPoints.push_back(goalPoint);
+        return pathPoints;
+    }
+    else{
+        //No Path Found
+        pathPoints.push_back(startPoint);
+        qDebug()<<"No Path Found.";
+        return pathPoints;
+    }
 
+}
+
+Node* PathFinder::findPointInCell(Node* root, QPointF target, QVector<Node *> *visited){
+    //root node contains point
+    qDebug()<<"Searching graph for cell containing ("<<target.x()<<","<<target.y()<<")...";
+    visited->push_back(root);
+    if(root->cell->contains(target.x(),target.y())){
+        return root;
+    }
+    //root node has no further connections
+    else if(root->connections.size()<=1){
+        return NULL;
+    }
+    //root has further connections, check each.
+    else{
+        for(int i=0; i<root->connections.size(); i++){
+            //traverse rest of graph using each root until target is found
+            //ensure no repitions
+            if(!(visited->contains(root->connections[i]))){
+                Node* next = findPointInCell(root->connections[i],target, visited);
+                if(next!=NULL){
+                    //Check to ensure point is contained
+                    if(next->cell->contains(target.x(),target.y())){
+                        //return cell containing point
+                        return next;
+                    }
+                }
+            }
+            //Point not in this connections branch, try next
+        }
+        //None of root's connection's branchs contain point.
+        return NULL;
+    }
+}
+
+Node* PathFinder::cellPath(Node* root, Node *target, QVector<Node*> *cells){
+    //Check node and connection branchs for connection to target.
+    //Add each node to cells vector to track path.
+    qDebug()<<"Searching for path...";
+    //Add cell to path
+    cells->push_back(root);
+    if(root==target){
+        //The current node is the target
+        return root;
+    }
+    else if(root->connections.contains(target)){
+        //root has target in connections vector.
+        return cellPath(root->connections.at(root->connections.indexOf(target)),target,cells);
+    }
+    else{
+        //Check new cell
+        for(int i=0; i<root->connections.size(); i++){
+            //check if connections[i] has already been visited (present in cells vector)
+            if(!(cells->contains(root->connections[i])))
+                //if it has not been visited, visit.
+                return cellPath(root->connections[i],target,cells);
+        }
+        //No path exists from root to target
+        return NULL;
+    }
 }
 
 Node* PathFinder::generateGraph(QVector<QRectF> cells)
@@ -68,7 +205,7 @@ Node* PathFinder::generateGraph(QVector<QRectF> cells)
     {
         Node* node = new Node();
         node->cell = &cells[i];
-        node->number = node;
+        node->number = i;
         nodes.push_back(node);
     }
 
@@ -95,7 +232,7 @@ Node* PathFinder::generateGraph(QVector<QRectF> cells)
         qDebug() <<"node: " << i <<" "<< nodes[i]->number;
         for(int j = 0; j < nodes[i]->connections.size(); j++)
         {
-            qDebug() << nodes[i]->connections[j];
+            qDebug() << nodes[i]->connections[j]->number;
         }
     }
     return nodes[0];
